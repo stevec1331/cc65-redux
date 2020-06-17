@@ -22,11 +22,12 @@ export function activate(context: vscode.ExtensionContext): void {
 function buildCommands(context: vscode.ExtensionContext): void {
 
     const cmdStrScriptBuild = 'cc65.script.build';
-    const cmdScriptBuildCreate = 'cc65.script.build.create';
+    const cmdStrScriptBuildCreate = 'cc65.script.build.create';
+    const cmdStrScriptClean = 'cc65.script.clean';
     const cmdStrRun = 'cc65.run.program';
     const cmdStrRunEmu = 'cc65.run.emulator';
-    const cmdStrClean = 'cc65.clean';
     const cmdStrMakeBuild = 'cc65.make.build';
+    const cmdStrMakeClean = 'cc65.make.clean';
     const cmdStrTest = 'cc65.test';
 
     let commandScriptBuild = vscode.commands.registerCommand(cmdStrScriptBuild, function () {
@@ -35,7 +36,7 @@ function buildCommands(context: vscode.ExtensionContext): void {
     });
 
     //  define direct build & run commands
-    let commandScriptBuildCreate = vscode.commands.registerCommand(cmdScriptBuildCreate, function () {
+    let commandScriptBuildCreate = vscode.commands.registerCommand(cmdStrScriptBuildCreate, function () {
 
         scriptBuildCreate();
     });
@@ -50,19 +51,24 @@ function buildCommands(context: vscode.ExtensionContext): void {
         launchEmulator(false);
     });
 
-    let commandClean = vscode.commands.registerCommand(cmdStrClean, function () {
+    let commandClean = vscode.commands.registerCommand(cmdStrScriptClean, function () {
         // clean command
-        cleanBuildOutput();
+        cleanScriptBuildOutput();
     });
 
     // make based commmands
 
     //  define the build command
-    let commandBuildMake = vscode.commands.registerCommand(cmdStrMakeBuild, function () {
+    let commandMakeBuild = vscode.commands.registerCommand(cmdStrMakeBuild, function () {
 
-        buildProgramMake();
+        makeBuild();
     });
 
+    let commandMakeClean = vscode.commands.registerCommand(cmdStrMakeClean, function () {
+
+        makeClean();
+    });
+ 
     // test command
 
     let commandTest = vscode.commands.registerCommand(cmdStrTest, function () {
@@ -77,7 +83,8 @@ function buildCommands(context: vscode.ExtensionContext): void {
     context.subscriptions.push(commandRunEmu);
     context.subscriptions.push(commandClean);
     // regular commands
-    context.subscriptions.push(commandBuildMake);
+    context.subscriptions.push(commandMakeBuild);
+    context.subscriptions.push(commandMakeClean);
     context.subscriptions.push(commandTest);
 
     let textThemeColorKey: string = 'statusBarItem.prominentForeground';
@@ -101,7 +108,7 @@ function buildCommands(context: vscode.ExtensionContext): void {
     sbiRunEmu.tooltip = 'CC65 Launch Emulator';
 
     var sbiClean: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 97);
-    sbiClean.command = cmdStrClean;
+    sbiClean.command = cmdStrScriptClean;
     sbiClean.text = '$(clear-all) Clean';
     sbiClean.tooltip = 'CC65 Clean the workspace build dir';
 
@@ -257,7 +264,7 @@ function dumpConfig(outChannel: vscode.OutputChannel) {
     outChannel.appendLine("END  cc65 configuration   END");
 }
 
-function cleanBuildOutput() {
+function cleanScriptBuildOutput() {
 
     let errorCode = 0;
 
@@ -441,8 +448,12 @@ function scriptBuild() {
 
     // make sure the build dir is there
     let outputBuildDir: string = rootpath + fileseparator + buildDir;
+    let outputBinDir: string = outputBuildDir + fileseparator + "bin";
     if (!fs.existsSync(outputBuildDir)) {
         fs.mkdirSync(outputBuildDir);
+    }
+    if (!fs.existsSync(outputBinDir)) {
+        fs.mkdirSync(outputBinDir);
     }
 
     outputChannel.appendLine("Running build script...");
@@ -818,7 +829,7 @@ async function scriptBuildCreate() {
                         
                         // put everything in the buildDir
                         let prefixpath: string = ""; // rootpath + fileseparator;
-                        let progPath: string = prefixpath + buildDir + fileseparator + programName + "." + targetExtension;
+                        let progPath: string = prefixpath + buildDir + fileseparator + "bin" + fileseparator + programName + "." + targetExtension;
                         let labelPath: string = prefixpath + buildDir + fileseparator + programName + ".lbl";
                         let debugFilepath: string = prefixpath + buildDir + fileseparator + programName + ".dbg";
 
@@ -846,12 +857,12 @@ async function scriptBuildCreate() {
 /**
  *  Build the Program with the Make
  */
-function buildProgramMake() {
+function makeBuild() {
 
     let nyi: boolean = true;
     if (nyi) {
         vscode.window.showErrorMessage('makefile building not yet supported');
-        return;
+        return 0;
     }
 
 
@@ -909,8 +920,17 @@ function buildProgramMake() {
     });
 
     return errorCode;
+}
 
+function makeClean() {
 
+    let nyi: boolean = true;
+    if (nyi) {
+        vscode.window.showErrorMessage('makefile building not yet supported');
+        return;
+    }
+
+    return -1;
 }
 
 function launchEmulator(launchProgram: boolean) {
@@ -983,7 +1003,7 @@ function launchEmulator(launchProgram: boolean) {
         finalEmulatorOptions += " " + emulatorOptions;
 
         if (launchProgram) {
-            finalEmulatorOptions += " /run " + buildDir + fileseparator + programName + "." + targetExtension;
+            finalEmulatorOptions += " /run " + buildDir + fileseparator + "bin" + fileseparator + programName + "." + targetExtension;
         }
         emulatorOptions = emulatorPath + " " + finalEmulatorOptions;
     } else if (quickConfig === "VICE") {

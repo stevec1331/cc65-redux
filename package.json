@@ -2,7 +2,7 @@
 	"name": "cc65-redux",
 	"displayName": "cc65-redux",
 	"description": "CC65 cross compiler for 6502/6518 - based on cc65",
-	"version": "0.0.22",
+	"version": "0.0.23",
 	"publisher": "rumination-studios",
 	"markdown": "github",
 	"engines": {
@@ -84,12 +84,16 @@
 				"title": "CC65: Create a build script based on sources in the ./src directory of the workspace"
 			},
 			{
-				"command": "cc65.clean",
+				"command": "cc65.script.clean",
 				"title": "CC65: Clean the build directory"
 			},
 			{
 				"command": "cc65.make.build",
 				"title": "CC65: Build with Make"
+			},
+			{
+				"command": "cc65.make.clean",
+				"title": "CC65: Clean using make"
 			},
 			{
 				"command": "cc65.run.program",
