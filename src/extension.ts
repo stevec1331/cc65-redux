@@ -68,7 +68,7 @@ function buildCommands(context: vscode.ExtensionContext): void {
 
         makeClean();
     });
- 
+
     // test command
 
     let commandTest = vscode.commands.registerCommand(cmdStrTest, function () {
@@ -91,7 +91,7 @@ function buildCommands(context: vscode.ExtensionContext): void {
 
     let textColor: vscode.ThemeColor = new vscode.ThemeColor(textThemeColorKey);
 
-	var sbiBuild: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    var sbiBuild: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     sbiBuild.command = cmdStrScriptBuild;
     sbiBuild.color = textColor;
     sbiBuild.text = '$(zap) Build';
@@ -124,7 +124,7 @@ function buildCommands(context: vscode.ExtensionContext): void {
         sbiBuild.show();
         sbiRun.show();
         sbiRunEmu.show();
-        sbiClean.show();    
+        sbiClean.show();
     }
 
     // $(fold)
@@ -286,6 +286,7 @@ function cleanScriptBuildOutput() {
     outputChannel.appendLine("Cleaning project build dir...");
 
     let buildDir: string = getCC65BuildOutput();
+    let outputExtension: string = getCC65Extension();
 
     if (buildDir === '') {
         outputChannel.appendLine("Output build dir not configured.");
@@ -298,8 +299,9 @@ function cleanScriptBuildOutput() {
 
 
     let outputBuildDir: string = rootpath + fileseparator + buildDir;
+    let outputBuildBinDir: string = outputBuildDir + fileseparator + "bin";
 
-    outputChannel.append("OutputBuildDir: ");
+    outputChannel.append("Deleting files in OutputBuildDir: ");
     outputChannel.appendLine(outputBuildDir);
 
     if (!fs.existsSync(outputBuildDir)) {
@@ -312,20 +314,50 @@ function cleanScriptBuildOutput() {
 
     //vscode.window.showErrorMessage('Clean not implemented yet');
     //fs.rmdirSync(outputBuildDir);
+
+    // remove all files in the intermediate directory
     fs.readdir(outputBuildDir, (err, files) => {
         if (err) {
             throw err;
         }
-      
-        for (const file of files) {
-          fs.unlink(path.join(outputBuildDir, file), err => {
-            if (err) { 
-                throw err;
-            }
-          });
-        }
-      });
 
+        for (const file of files) {
+
+            let fullPath: string = path.join(outputBuildDir, file);
+            
+            // think of a better way to do this
+            if (!fullPath.endsWith("bin")) {
+                outputChannel.appendLine(fullPath);
+            }
+
+            fs.unlink(fullPath, err => {
+                if (err) {
+                    throw err;
+                }
+            });
+        }
+    });
+
+    // remove only the executable type
+    fs.readdir(outputBuildBinDir, (err, files) => {
+        if (err) {
+            throw err;
+        }
+
+        for (const file of files) {
+            // only delete if it is the executable
+
+            if (file.endsWith(outputExtension)) {
+                let fullPath: string = path.join(outputBuildBinDir, file);
+                outputChannel.appendLine(fullPath);
+                fs.unlink(fullPath, err => {
+                    if (err) {
+                        throw err;
+                    }
+                });
+            }
+        }
+    });
 
     return errorCode;
 }
@@ -414,7 +446,7 @@ function scriptBuild() {
     }
 
     // fix up this string literal
-    let filename:string = vscode.workspace.rootPath!.trim() + "/cc65_plugin_build" + scriptExt;
+    let filename: string = vscode.workspace.rootPath!.trim() + "/cc65_plugin_build" + scriptExt;
 
     // if the file is not there, we can't do anythhing
     if (!fs.existsSync(filename)) {
@@ -425,7 +457,7 @@ function scriptBuild() {
         // exit early with error
         errorCode = -5;
         return errorCode;
-    }    
+    }
 
     outputChannel.append("Building using buildenv: ");
     outputChannel.append(buildenv);
@@ -433,7 +465,7 @@ function scriptBuild() {
     outputChannel.append(vscodeenv);
     outputChannel.appendLine("...");
 
-    let parameters: string[] = [];    
+    let parameters: string[] = [];
     if (command === "powershell.exe") {
         parameters = [
             "\"",
@@ -461,7 +493,7 @@ function scriptBuild() {
     outputChannel.append(" ");
     outputChannel.append(parameters.join(" "));
     outputChannel.appendLine("...");
-    
+
     // this runs the command
     let ca = cp.spawn(command, parameters, {
         detached: false,
@@ -494,7 +526,7 @@ function scriptBuild() {
 
 async function chooseToOverwrite() {
 
-    let qpOptions:vscode.QuickPickOptions = {
+    let qpOptions: vscode.QuickPickOptions = {
         canPickMany: false,
         ignoreFocusOut: true,
         placeHolder: 'Build script already exists. Overwrite?'
@@ -650,12 +682,12 @@ async function scriptBuildCreate() {
     if (fs.existsSync(filename)) {
 
         let selectedString = await chooseToOverwrite();
-        
+
         if (selectedString !== 'overwrite') {
             outputChannel.appendLine("Aborting due to existing script file");
             return 0;
         }
-        
+
         outputChannel.appendLine("Overwriting existing script file...");
     }
 
@@ -702,19 +734,19 @@ async function scriptBuildCreate() {
         tgiDriverFileName = path.parse(tgiDriverPath).name;
         tgiDriverAssemblerFile = buildDir + fileseparator + tgiDriverFileName + ".s";
         // add the command to make the driver static image
-        fs.appendFileSync(filename, 
+        fs.appendFileSync(filename,
             cc65Path_bin + fileseparator + "co65" + toolExtension +
-            " --code-label " + tgiLabel + 
+            " --code-label " + tgiLabel +
             " " + tgiDriverPath +
             " -o " + tgiDriverAssemblerFile +
             "\n", "utf8");
-            
-            let symbolName:string = tgiLabel.slice(1);
 
-            outputChannel.append("Make sure to declare the proper variable in source code: extern void ");
-            outputChannel.append(symbolName);
-            outputChannel.appendLine("[];");
-            outputChannel.appendLine("And corresponding tgi_install() call.");
+        let symbolName: string = tgiLabel.slice(1);
+
+        outputChannel.append("Make sure to declare the proper variable in source code: extern void ");
+        outputChannel.append(symbolName);
+        outputChannel.appendLine("[];");
+        outputChannel.appendLine("And corresponding tgi_install() call.");
     }
 
 
@@ -727,12 +759,12 @@ async function scriptBuildCreate() {
                 for (var index in files) {
                     var oneFile = files[index].path.substring(files[index].path.indexOf("src/"));
 
-                    let justFilename:string = oneFile.replace("src/", "");
+                    let justFilename: string = oneFile.replace("src/", "");
 
                     if (buildingOnWindows) {
                         oneFile = oneFile.replace("/", "\\");
                     }
-                    
+
                     let pathPrefix: string = ""; // rootpath + fileseparator
                     let compilerResultFile: string = pathPrefix + buildDir + fileseparator + justFilename.replace(".c", ".s");
                     let assembler65ResultFile: string = pathPrefix + buildDir + fileseparator + justFilename.replace(".c", ".o");
@@ -773,12 +805,12 @@ async function scriptBuildCreate() {
                         for (var index in files) {
                             var oneFile = files[index].path.substring(files[index].path.indexOf("src/"));
 
-                            let justFilename:string = oneFile.replace("src/", "");
+                            let justFilename: string = oneFile.replace("src/", "");
 
                             if (buildingOnWindows) {
                                 oneFile = oneFile.replace("/", "\\");
                             }
-                            
+
                             let pathPrefix: string = ""; // rootpath + fileseparator
                             let assembler65ResultFile: string = pathPrefix + buildDir + fileseparator + justFilename.replace(".s", ".o");
 
@@ -793,10 +825,10 @@ async function scriptBuildCreate() {
 
                             objectFilesSet.add(assembler65ResultFile);
                         }
-                        
+
                         // add the driver link file
                         if (tgiDriverAssemblerFile) {
-                            
+
                             // remember the what is the output
                             let assemblerTGIdriverResultFile: string = tgiDriverAssemblerFile.replace(".s", ".o");
 
@@ -809,7 +841,7 @@ async function scriptBuildCreate() {
                                 " -o " + assemblerTGIdriverResultFile +
                                 "\n", "utf8");
 
-                            objectFilesSet.add(assemblerTGIdriverResultFile);                            
+                            objectFilesSet.add(assemblerTGIdriverResultFile);
                         }
 
                     },
@@ -826,7 +858,7 @@ async function scriptBuildCreate() {
                         }
 
                         var allObjectFiles = objectFiles.join(' ');
-                        
+
                         // put everything in the buildDir
                         let prefixpath: string = ""; // rootpath + fileseparator;
                         let progPath: string = prefixpath + buildDir + fileseparator + "bin" + fileseparator + programName + "." + targetExtension;
@@ -843,7 +875,7 @@ async function scriptBuildCreate() {
                             " -o " + progPath +
                             " " + allObjectFiles +
                             " " + cc65Path + fileseparator + "lib" + fileseparator + target + ".lib"
-                        );                        
+                        );
                     });
 
                 outputChannel.appendLine("Build Script created: ");

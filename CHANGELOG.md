@@ -10,6 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 -- make file support
 -- shell selection for make file support
 
+## [0.0.24] - 2020-06-17
+
+- fix clean to remove the output binary from the build directory
+
 ## [0.0.23] - 2020-06-16
 
 - modifed output path for script built to put binary in a /bin subdir of the build dir
