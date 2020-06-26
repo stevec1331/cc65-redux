@@ -10,6 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 -- make file support
 -- shell selection for make file support
 
+## [0.0.25] - 2020-06-26
+
+- put the debug files next to the xex file
+
 ## [0.0.24] - 2020-06-17
 
 - fix clean to remove the output binary from the build directory

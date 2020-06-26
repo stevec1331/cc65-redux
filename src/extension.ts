@@ -345,9 +345,10 @@ function cleanScriptBuildOutput() {
         }
 
         for (const file of files) {
-            // only delete if it is the executable
+            // only delete if it is the executable, .lbl, or .dbg
+            let deleteIt : boolean = file.endsWith(outputExtension) || file.endsWith("lbl") || file.endsWith("dbg");
 
-            if (file.endsWith(outputExtension)) {
+            if (deleteIt) {
                 let fullPath: string = path.join(outputBuildBinDir, file);
                 outputChannel.appendLine(fullPath);
                 fs.unlink(fullPath, err => {
@@ -862,8 +863,8 @@ async function scriptBuildCreate() {
                         // put everything in the buildDir
                         let prefixpath: string = ""; // rootpath + fileseparator;
                         let progPath: string = prefixpath + buildDir + fileseparator + "bin" + fileseparator + programName + "." + targetExtension;
-                        let labelPath: string = prefixpath + buildDir + fileseparator + programName + ".lbl";
-                        let debugFilepath: string = prefixpath + buildDir + fileseparator + programName + ".dbg";
+                        let labelPath: string = prefixpath + buildDir + fileseparator + "bin" + fileseparator + programName + ".lbl";
+                        let debugFilepath: string = prefixpath + buildDir + fileseparator + "bin" + fileseparator + programName + ".dbg";
 
                         //outputChannel.append('' + config);
                         fs.appendFileSync(filename,
