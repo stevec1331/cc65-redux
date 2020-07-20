@@ -2,7 +2,7 @@
 	"name": "cc65-redux",
 	"displayName": "cc65-redux",
 	"description": "CC65 cross compiler for 6502/6518 - based on cc65",
-	"version": "0.0.25",
+	"version": "0.0.27",
 	"publisher": "rumination-studios",
 	"markdown": "github",
 	"engines": {
@@ -117,7 +117,7 @@
 				"cc65.compilerToolsPath": {
 					"type": "string",
 					"default": "C:\\cc65",
-					"description": "Path to cc65 binary files.",
+					"description": "Path to cc65 install.",
 					"required": true
 				},
 				"cc65.createDebugInfo": {

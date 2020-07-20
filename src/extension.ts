@@ -95,27 +95,40 @@ function buildCommands(context: vscode.ExtensionContext): void {
     sbiBuild.command = cmdStrScriptBuild;
     sbiBuild.color = textColor;
     sbiBuild.text = '$(zap) Build';
-    sbiBuild.tooltip = 'CC65 Build Workspace';
+    sbiBuild.tooltip = 'CC65 Script Build';
 
-    var sbiRun: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+    var sbiClean: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+    sbiClean.command = cmdStrScriptClean;
+    sbiClean.text = '$(clear-all) Clean';
+    sbiClean.tooltip = 'CC65 Clean the workspace build dir';
+   
+    var sbiRun: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
     sbiRun.command = cmdStrRun;
     sbiRun.text = '$(debug-start) Run';
     sbiRun.tooltip = 'CC65 Run built program in emulator';
 
-    var sbiRunEmu: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+    var sbiRunEmu: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 97);
     sbiRunEmu.command = cmdStrRunEmu;
     sbiRunEmu.text = '$(vm-running) Emu';
     sbiRunEmu.tooltip = 'CC65 Launch Emulator';
 
-    var sbiClean: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 97);
-    sbiClean.command = cmdStrScriptClean;
-    sbiClean.text = '$(clear-all) Clean';
-    sbiClean.tooltip = 'CC65 Clean the workspace build dir';
+    var sbiMakeBuild: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 96);
+    sbiMakeBuild.command = cmdStrMakeBuild;
+    sbiMakeBuild.text = '$(package) Make Bld';
+    sbiMakeBuild.tooltip = 'CC65 Make Build';
+
+    var sbiMakeClean: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 96);
+    sbiMakeClean.command = cmdStrMakeClean;
+    sbiMakeClean.text = '$(trashcan) Make Cln';
+    sbiMakeClean.tooltip = 'CC65 Make Clean';
 
     context.subscriptions.push(sbiBuild);
+    context.subscriptions.push(sbiClean);
     context.subscriptions.push(sbiRun);
     context.subscriptions.push(sbiRunEmu);
-    context.subscriptions.push(sbiClean);
+
+    context.subscriptions.push(sbiMakeBuild);
+    context.subscriptions.push(sbiMakeClean);
 
     let theConfig = vscode.workspace.getConfiguration('cc65');
     let showOnStatusbar = theConfig.get('cc65.vscode.statusbar', true);
@@ -125,12 +138,12 @@ function buildCommands(context: vscode.ExtensionContext): void {
         sbiRun.show();
         sbiRunEmu.show();
         sbiClean.show();
+        sbiMakeBuild.show();
+        sbiMakeClean.show();
     }
 
     // $(fold)
     // $(unfold)
-
-
 }
 
 function getOneConfig(key: string, defaultVal: string, outChannel?: vscode.OutputChannel): string {
@@ -892,13 +905,6 @@ async function scriptBuildCreate() {
  */
 function makeBuild() {
 
-    let nyi: boolean = true;
-    if (nyi) {
-        vscode.window.showErrorMessage('makefile building not yet supported');
-        return 0;
-    }
-
-
     let errorCode = 0;
 
     let outputChannel = vscode.window.createOutputChannel('cc65');
@@ -911,12 +917,18 @@ function makeBuild() {
     let buildenv = getCC65BuildEnv();
     let vscodeenv = getCC65VSCodeEnv();
 
-    let command = "powershell.exe";
+    let command = "cmd.exe";
 
     if (buildenv === "linux" && vscodeenv === "linux") {
         command = "bash";
     } else if (buildenv === "linux" && vscodeenv === "windows") {
         command = "wsl";
+    } else if (buildenv === "windows" && vscodeenv === "windows") {
+        command = "cmd.exe";
+    } else {
+        vscode.window.showErrorMessage('cc65 build env misconfigured. Check User Settings.');
+        errorCode = -3;
+        return errorCode;
     }
 
     outputChannel.append("Making using buildenv: ");
@@ -929,7 +941,7 @@ function makeBuild() {
 
     let make = cp.spawn(command, [
         "make",
-        "T=" + target
+        "CC65_TARGET=" + target
     ], {
         detached: false,
         shell: true,
@@ -957,13 +969,67 @@ function makeBuild() {
 
 function makeClean() {
 
-    let nyi: boolean = true;
-    if (nyi) {
-        vscode.window.showErrorMessage('makefile building not yet supported');
-        return;
+    let errorCode = 0;
+
+    let outputChannel = vscode.window.createOutputChannel('cc65');
+    outputChannel.clear();
+    outputChannel.show();
+    dumpConfig(outputChannel);
+
+    // Check path settings
+    let target = getCC65Target();
+    let buildenv = getCC65BuildEnv();
+    let vscodeenv = getCC65VSCodeEnv();
+
+    let command = "cmd.exe";
+
+    if (buildenv === "linux" && vscodeenv === "linux") {
+        command = "bash";
+    } else if (buildenv === "linux" && vscodeenv === "windows") {
+        command = "wsl";
+    } else if (buildenv === "windows" && vscodeenv === "windows") {
+        command = "cmd.exe";
+    } else {
+        vscode.window.showErrorMessage('cc65 build env misconfigured. Check User Settings.');
+        errorCode = -3;
+        return errorCode;
     }
 
-    return -1;
+    outputChannel.append("Cleaning using buildenv: ");
+    outputChannel.append(buildenv);
+    outputChannel.append(" vscodenv: ");
+    outputChannel.append(vscodeenv);
+    outputChannel.append(" target: ");
+    outputChannel.append(target);
+    outputChannel.appendLine("...");
+
+    let make = cp.spawn(command, [
+        "make",
+        "clean",
+        "CC65_TARGET=" + target
+    ], {
+        detached: false,
+        shell: true,
+        cwd: vscode.workspace.rootPath!.trim()
+    });
+
+    make.on('close', function (e) {
+        outputChannel.appendLine('Child process exit code: ' + e);
+        errorCode = e;
+        if (e !== 0) {
+            vscode.window.showErrorMessage('Compilation failed with errors.');
+        }
+    });
+
+    make.stdout.on('data', function (data) {
+        outputChannel.append('' + data);
+    });
+
+    make.stderr.on('data', function (data) {
+        outputChannel.append('' + data);
+    });
+
+    return errorCode;
 }
 
 function launchEmulator(launchProgram: boolean) {

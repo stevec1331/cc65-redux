@@ -10,6 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 -- make file support
 -- shell selection for make file support
 
+## [0.0.26] - 2020-07-19
+
+- adding makefile support
+
 ## [0.0.25] - 2020-06-26
 
 - put the debug files next to the xex file
