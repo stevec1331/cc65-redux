@@ -83,9 +83,9 @@ function buildCommands(context: vscode.ExtensionContext): void {
     context.subscriptions.push(commandRunEmu);
     context.subscriptions.push(commandClean);
     // regular commands
-    context.subscriptions.push(commandMakeBuild);
-    context.subscriptions.push(commandMakeClean);
-    context.subscriptions.push(commandTest);
+    //context.subscriptions.push(commandMakeBuild);
+    //context.subscriptions.push(commandMakeClean);
+    //context.subscriptions.push(commandTest);
 
     let textThemeColorKey: string = 'statusBarItem.prominentForeground';
 
@@ -127,8 +127,8 @@ function buildCommands(context: vscode.ExtensionContext): void {
     context.subscriptions.push(sbiRun);
     context.subscriptions.push(sbiRunEmu);
 
-    context.subscriptions.push(sbiMakeBuild);
-    context.subscriptions.push(sbiMakeClean);
+    //context.subscriptions.push(sbiMakeBuild);
+    //context.subscriptions.push(sbiMakeClean);
 
     let theConfig = vscode.workspace.getConfiguration('cc65');
     let showOnStatusbar = theConfig.get('cc65.vscode.statusbar', true);
@@ -138,8 +138,8 @@ function buildCommands(context: vscode.ExtensionContext): void {
         sbiRun.show();
         sbiRunEmu.show();
         sbiClean.show();
-        sbiMakeBuild.show();
-        sbiMakeClean.show();
+        //sbiMakeBuild.show();
+        //sbiMakeClean.show();
     }
 
     // $(fold)
@@ -917,14 +917,14 @@ function makeBuild() {
     let buildenv = getCC65BuildEnv();
     let vscodeenv = getCC65VSCodeEnv();
 
-    let command = "cmd.exe";
+    let command = "powershell.exe";
 
     if (buildenv === "linux" && vscodeenv === "linux") {
         command = "bash";
     } else if (buildenv === "linux" && vscodeenv === "windows") {
-        command = "wsl";
+        command = "powershell.exe";
     } else if (buildenv === "windows" && vscodeenv === "windows") {
-        command = "cmd.exe";
+        command = "powershell.exe";
     } else {
         vscode.window.showErrorMessage('cc65 build env misconfigured. Check User Settings.');
         errorCode = -3;
@@ -981,14 +981,14 @@ function makeClean() {
     let buildenv = getCC65BuildEnv();
     let vscodeenv = getCC65VSCodeEnv();
 
-    let command = "cmd.exe";
+    let command = "powershell.exe";
 
     if (buildenv === "linux" && vscodeenv === "linux") {
         command = "bash";
     } else if (buildenv === "linux" && vscodeenv === "windows") {
-        command = "wsl";
+        command = "powershell.exe";
     } else if (buildenv === "windows" && vscodeenv === "windows") {
-        command = "cmd.exe";
+        command = "powershell.exe";
     } else {
         vscode.window.showErrorMessage('cc65 build env misconfigured. Check User Settings.');
         errorCode = -3;

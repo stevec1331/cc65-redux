@@ -7,8 +7,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [Unreleased]
 
 - in progress
--- make file support
--- shell selection for make file support
+
+## [0.0.27] - 2020-07-25
+
+- removing makefile support - better to use other vscode tools/extensions
 
 ## [0.0.26] - 2020-07-19
 
