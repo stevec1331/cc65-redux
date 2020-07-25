@@ -14,13 +14,12 @@ Output files are put into the build/ directory in the workspace.
 
 Some features are not completed yet.
 
-* "CC65: Build Directly" will compile the files under the src folder of the workspace.
-* "CC65: Clean the build directory" deletes all files in the build/ directory.
-* "CC65: Build with Make" will execute Make in the workspace root.
-* "CC65: Build with Make & Run Emulator" will make and launch the emulator of the built target
-* "CC65: Build Directly & Run Emulator" will build directly and launch the emulator
-* "CC65: Run Program in Emulator" will run the currently compiled app in the root of the workspace in the emulator.
-* "CC65: Launch the Emulator" launches the emulator.
+* "CC65: Build using script file from analyze/manual step" runs the build script done by the analysis step
+* "CC65: Create a build script based on sources in the ./src directory of the workspace" creates the build script
+* "CC65: Clean the build directory" of files generated from the build script
+* "CC65: Run Program in Emulator" runs the script build target in the emulator
+* "CC65: Launch the Emulator" launches the set emulator
+
 
 ## Requirements
 
