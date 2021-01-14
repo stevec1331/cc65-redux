@@ -8,6 +8,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - in progress
 
+## [0.0.29] - 2021-01-13
+
+- updating vs code extension sdk 
+
+## [0.0.28] - 2020-07-25
+
 ## [0.0.27] - 2020-07-25
 
 - removing makefile support - better to use other vscode tools/extensions
